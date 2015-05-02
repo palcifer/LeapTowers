@@ -7,11 +7,14 @@ public class TowerBehavior : MonoBehaviour {
 
 	private BridgeBuilding cursor;
 
+	private SceneLogic scn;
+
 	void Start(){
 
 		this.renderer.material.color = startcolor;
-
+		scn = GameObject.Find ("GameLogic").GetComponent<SceneLogic> ();
 	}
+	
 
 	void OnTriggerEnter(Collider collider){
 		cursor = collider.GetComponent<BridgeBuilding> ();

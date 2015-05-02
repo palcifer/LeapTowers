@@ -51,12 +51,8 @@
      <Compile Include="Assets\Scripts\SceneLogic.cs" />
      <Compile Include="Assets\Scripts\TowerAndTileScript.cs" />
      <Compile Include="Assets\Scripts\TowerBehavior.cs" />
-     <None Include="Assets\Saves\20-33_02-05-2015.txt" />
-     <None Include="Assets\Saves\20-36_02-05-2015.txt" />
-     <None Include="Assets\Saves\20-35_02-05-2015.txt" />
-     <None Include="Assets\Saves\20-34_02-05-2015.txt" />
-     <None Include="Assets\Saves\20-32_02-05-2015.txt" />
-     <None Include="Assets\Resources\SavedScenes.txt" />
+     <None Include="Assets\Resources\Save\SavedScene1.txt" />
+     <None Include="Assets\Resources\Save\SavedScene2.txt" />
  <Reference Include="UnityEngine.UI">
  <HintPath>/Applications/Unity/Unity.app/Contents/UnityExtensions/Unity/GUISystem/4.6.4/UnityEngine.UI.dll</HintPath>
  </Reference>

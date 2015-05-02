@@ -8,15 +8,16 @@ public class SceneLogic : MonoBehaviour {
 	float yPlanePosition = -3;
 	public int planeXTiles = 8;
 	public int planeYTiles = 4;
+
 	private Object TilePrefab;
-	IList<GameObject> Tiles = new List<GameObject>();
+	public IList<GameObject> Tiles = new List<GameObject>();
 
 	public IList<GameObject> Towers = new List<GameObject>();
 
 	private Object NewronkoPrefab;
 	public GameObject newronko;
 	private Vector3 newronkoPosition = Vector3.zero;
-	public float newronkoFinalXPosition = 0;
+	public float newronkoFinalXPosition = -30;
 	private float newronkoScaleY = 1;
 
 	private BridgeBuilding cursor;
@@ -109,52 +110,55 @@ public class SceneLogic : MonoBehaviour {
 		        	      Mathf.Pow(this.transform.position.z - towerFrom.transform.position.z, 2));
 	}
 
-	public void SaveTowers(){
-		string str = savedScenes.text;
+	public void SaveTowers(int i){
+		string str = "";
 		//first record
 		if (str == "") {
-			str = str + "%" + System.DateTime.Now.ToString ("HH-mm_dd-MM-yyyy") + "\n";
+			str = str + "%" + i + "\n";
 		} else {
-			str = str + "\n%" + System.DateTime.Now.ToString ("HH-mm_dd-MM-yyyy") + "\n";
+		//not forst record
+			//str = str + "\n%" + System.DateTime.Now.ToString ("HH-mm_dd-MM-yyyy") + "\n";
+			str = str + "\n%" + i + "\n";
 		}
 		foreach (GameObject tower in Towers) {
 			str = str + tower.transform.position.x + ";" + tower.transform.position.z + ";" + tower.transform.localScale.y + "\n";
 		}
 		str = str + "&";
-		System.IO.File.WriteAllText (Application.dataPath + "/Resources/SavedScenes.txt", str);
+		System.IO.File.WriteAllText (Application.dataPath + "/Resources/Save/SavedScene" + System.Convert.ToString(i) + ".txt", str);
 	}
 
-	public void LoadTowers(){
+	public void LoadTowers(int i){
 
+		savedScenes = (TextAsset)Resources.Load("Save/SavedScene" + System.Convert.ToString(i));
 		string str = savedScenes.text;
 		string[] lines = str.Split('\n');
 
 		string name = "";
-		int nameCount = 0;
 		string[] coordinatesStr = new string[3];
 		IList<Vector3> towerCoordinates = new List<Vector3> ();
 
 
 		foreach (string line in lines) {
-			if(line[0]=='%'){
-				name = nameCount.ToString();
-				nameCount++;
-			}
-			if((line[0]!='%') && (line[0]!='&')){
-				coordinatesStr = line.Split(';');
-				Vector3 coordinatesVect = new Vector3(float.Parse(coordinatesStr[0]), 
-				                                      float.Parse(coordinatesStr[1]), 
-				                                      float.Parse(coordinatesStr[2]));
-				towerCoordinates.Add(coordinatesVect);
-			}
-			if(line[0] == '&'){
-				IList<Vector3> towerCoordinatesTemp = new List<Vector3> (towerCoordinates);
-				savedScenesList.Add(name, towerCoordinatesTemp);
-				towerCoordinates.Clear();
+			if(line != ""){
+				if(line[0]=='%'){
+					name = line[1].ToString();
+				}
+				if((line[0]!='%') && (line[0]!='&')){
+					coordinatesStr = line.Split(';');
+					Vector3 coordinatesVect = new Vector3(float.Parse(coordinatesStr[0]), 
+					                                      float.Parse(coordinatesStr[1]), 
+					                                      float.Parse(coordinatesStr[2]));
+					towerCoordinates.Add(coordinatesVect);
+				}
+				if(line[0] == '&'){
+					IList<Vector3> towerCoordinatesTemp = new List<Vector3> (towerCoordinates);
+					savedScenesList.Add(name, towerCoordinatesTemp);
+					towerCoordinates.Clear();
+				}
 			}
 		}
 
-		string temp = "3";
+		string temp = System.Convert.ToString(i);
 		IList<Vector3> towerCoordinates2 = new List<Vector3> ();
 		savedScenesList.TryGetValue(temp, out towerCoordinates2);
 		foreach (Vector3 vect in towerCoordinates2) {

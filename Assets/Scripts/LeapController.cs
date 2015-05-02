@@ -12,14 +12,16 @@ public class LeapController : MonoBehaviour {
 	Vector3 palmPosition;
 	float planeYOffset;
 
+	void Awake() {
+		CursorPrefab = Resources.Load("Prefabs/SphereCursor");
+		cursor = (GameObject)Instantiate (CursorPrefab, GameObject.Find ("Main Camera").transform.position, Quaternion.identity);
+	}
 
 	// Use this for initialization
 	void Start () {
 		controller = new Controller ();
 		palmPosition = new Vector3 ();
 		isCursorAssigned = false;
-		CursorPrefab = Resources.Load("Prefabs/SphereCursor");
-		cursor = (GameObject)Instantiate (CursorPrefab, GameObject.Find ("Main Camera").transform.position, Quaternion.identity);
 		planeYOffset = GameObject.Find ("GameLogic").GetComponent<SceneLogic> ().getPlaneYPosition ();
 	}
 	
