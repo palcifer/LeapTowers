@@ -9,12 +9,47 @@ public class TowerBehavior : MonoBehaviour {
 
 	private SceneLogic scn;
 
+	//deleting and scaling of towers
+	private Vector3 mousePosInit;
+	private System.DateTime timeInit;
+	private float towerYScaleInit;
+
 	void Start(){
 
 		this.renderer.material.color = startcolor;
 		scn = GameObject.Find ("GameLogic").GetComponent<SceneLogic> ();
 	}
-	
+
+	void OnMouseUp(){
+		System.TimeSpan span = System.DateTime.Now - timeInit;
+		if(span.TotalSeconds < 0.2d)
+		DeleteTower ();
+	}
+
+	void OnMouseDown(){
+		timeInit = System.DateTime.Now;
+		mousePosInit = Input.mousePosition;
+		towerYScaleInit = this.gameObject.transform.localScale.y;
+	}
+
+	void OnMouseDrag(){
+		float ofset = (mousePosInit.y - Input.mousePosition.y)/(-100.0f);
+		//print (ofset);
+		ofset = towerYScaleInit + ofset;
+		if (ofset <= 0.5f)
+			ofset = 0.5f;
+		this.gameObject.transform.localScale = new Vector3(1, ofset, 1);
+		this.gameObject.transform.position = new Vector3 (this.gameObject.transform.position.x, 
+		                                                 scn.getPlaneYPosition() + this.gameObject.GetComponent<MeshRenderer> ().bounds.size.y / 2, 
+		                                                 this.gameObject.transform.position.z);
+	}
+
+	public void DeleteTower(){
+		scn.Towers.Remove (this.gameObject);
+		GameObject tile = scn.GetTileOnCoordinates (this.gameObject.transform.position.x, this.gameObject.transform.position.z);
+		tile.GetComponent<TowerAndTileScript> ().hasTower = false;
+		Destroy (this.gameObject);
+	}
 
 	void OnTriggerEnter(Collider collider){
 		cursor = collider.GetComponent<BridgeBuilding> ();

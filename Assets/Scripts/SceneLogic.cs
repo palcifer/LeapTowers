@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
+using System.Linq;
 
 public class SceneLogic : MonoBehaviour {
 	
@@ -12,19 +13,18 @@ public class SceneLogic : MonoBehaviour {
 	private Object TilePrefab;
 	public IList<GameObject> Tiles = new List<GameObject>();
 
-	public IList<GameObject> Towers = new List<GameObject>();
+	public List<GameObject> Towers = new List<GameObject>();
 
 	private Object NewronkoPrefab;
 	public GameObject newronko;
-	private Vector3 newronkoPosition = Vector3.zero;
-	public float newronkoFinalXPosition = -30;
+	public float newronkoFinalXPosition = 5;
 	private float newronkoScaleY = 1;
 
 	private BridgeBuilding cursor;
 	private GameObject initTower;
 
 	private TextAsset savedScenes;
-	private Dictionary<string, IList<Vector3>> savedScenesList;
+	private Dictionary<string, IList<Vector3>> savedScenesDictionary;
 
 	// Use this for initialization
 	void Start () {
@@ -34,7 +34,7 @@ public class SceneLogic : MonoBehaviour {
 		newronko = (GameObject)Instantiate(NewronkoPrefab, GameObject.Find ("Main Camera").transform.position, Quaternion.identity);
 		cursor = GameObject.Find ("LeapController").GetComponent<LeapController> ().cursor.GetComponent<BridgeBuilding> ();
 		savedScenes = (TextAsset)Resources.Load ("SavedScenes");
-		savedScenesList = new Dictionary<string, IList<Vector3>> ();
+		savedScenesDictionary = new Dictionary<string, IList<Vector3>> ();
 	}
 	
 
@@ -76,16 +76,16 @@ public class SceneLogic : MonoBehaviour {
 
 	public void CreateNewronko(){
 		newronkoScaleY = newronko.GetComponent<MeshRenderer> ().bounds.size.y;
-		foreach (GameObject tower in Towers) {
-			if ((tower.transform.position.x <= newronkoPosition.x)){
-				newronkoPosition = new Vector3(tower.transform.position.x, 
-				                                      tower.transform.position.y + tower.transform.localScale.y + newronkoScaleY/2, 
-				                                      tower.transform.position.z);
-				initTower = tower;
-			}
-			if(tower.transform.position.x>newronkoFinalXPosition) newronkoFinalXPosition = tower.transform.position.x;
+		Towers.Sort (Compare);
+		if (Towers.Count != 0) {
+			initTower = Towers.First ();
+		} else {
+			initTower = GameObject.Find("Main Camera");
 		}
-		newronko.transform.position = newronkoPosition;
+		newronko.transform.position = new Vector3(initTower.transform.position.x, 
+		                               initTower.transform.position.y + initTower.transform.localScale.y + newronkoScaleY/2, 
+		                               initTower.transform.position.z);
+		CheckScene ();
 	}
 
 	public void SetNewronkoNewPosition(Vector3 vect){
@@ -93,21 +93,123 @@ public class SceneLogic : MonoBehaviour {
 		newronko.transform.position = vect;
 	}	
 
+	public GameObject GetTileOnCoordinates(float x, float z){
+		foreach (GameObject tile in Tiles) {
+			if(tile.transform.position.x == x && tile.transform.position.z == z)
+				return tile;
+		}
+		return null;
+	}
+
 	public void SetBridgeLength(float l){
 		cursor.SetBridgeLength(l);
 	}
 
-	public void DijkstraCheckScene(){
+	public void CheckScene(){
 		float bridgeLength = cursor.bridgeLength;
-		//save tower list
-		IList<GameObject> tmpTowers = new List<GameObject> (Towers);
+		Towers.Sort (Compare);
+		newronkoFinalXPosition = Towers.Last ().transform.position.x;
+		foreach (GameObject tower in Towers) {
+			if(tower.transform.position.x == newronkoFinalXPosition)
+				tower.renderer.material.color = Color.red;
+		}
+		GameObject[] towers = new GameObject[Towers.Count];
+		towers = Towers.ToArray ();
+		List<GameObject> workingSet = new List<GameObject> ();
+		workingSet.Add (initTower);
 
+		float towerWidth = towers[0].GetComponent<MeshRenderer> ().bounds.size.x / 2;
+		float cursorWidth = cursor.GetComponent<MeshRenderer> ().bounds.size.x / 2;
+		bridgeLength = bridgeLength + towerWidth + cursorWidth;
+
+		bool addTower = false;
+		for (int i = 1; i < towers.Count(); i++) {
+			addTower = false;
+			foreach (GameObject workingTower in workingSet) {
+				if(distanceOfTwoTowers(workingTower, towers[i])<bridgeLength){
+					addTower = true;
+				}
+			}
+
+			if(addTower){
+			workingSet.Add(towers[i]);
+			}
+		}
+		//print (workingSet.Last ().name + "    " + newronkoFinalXPosition);
+		if (workingSet.Last().transform.position.x == newronkoFinalXPosition) {
+			print("there is a way");
+		} else {
+			print("there is not a way");
+		}
+
+//		//save tower list
+//		//List<GameObject> tmpTowers = new List<GameObject> (Towers);
+//		//WTF?? link :D 
+//		//var tmpTowers = from i in Towers orderby i.transform.position.x select i;
+//		List<GameObject> tmpTowers = new List<GameObject> (Towers);
+//		tmpTowers.Sort (Compare);
+//		List<GameObject> workingSet = new List<GameObject> ();
+//
+//		workingSet.Add (initTower);
+//		tmpTowers.RemoveAt (0);
+//
+//		List<GameObject>.Enumerator workingSetEnumerator = workingSet.GetEnumerator ();
+//		List<GameObject>.Enumerator tmpTowersEnumerator = tmpTowers.GetEnumerator ();
+//		GameObject workingTower = new GameObject();
+//		GameObject tmpTower = new GameObject();
+//		
+//		bool addTower = false;
+//
+//		while (tmpTowersEnumerator.MoveNext()) {
+//			while (workingSetEnumerator.MoveNext()) {
+//
+//				workingTower = workingSetEnumerator.Current;
+//				tmpTower = tmpTowersEnumerator.Current;
+//
+//				if(distanceOfTwoTowers(workingTower, tmpTower) < bridgeLength){
+//					addTower = true;
+//				}
+//
+//				if(Mathf.Abs(tmpTower.transform.position.x - workingTower.transform.position.x) < bridgeLength){
+//					//workingSetEnumerator.Dispose();
+//				}
+//			}
+//			if(addTower){
+//				workingSet.Add(tmpTower);
+//				addTower = false;
+//			}
+//		}
+//
+//		if (tmpTowers.Count == 0) {
+//			print ("everything ok");
+//		} else {
+//			print ("everything is not ok");
+//		}
+//
+//		//tmpTowers.Sort (Compare);
+//		//ArrayList.Adapter (tmpTowers).Sort (comparator);
+//		foreach (GameObject item in tmpTowers) {
+//			print(item.transform.position);
+//		}
+	}
+
+	private int Compare(GameObject a, GameObject b){
+		if (a.transform.position.x < b.transform.position.x)
+			return -1;
+		else if (a.transform.position.x > b.transform.position.x)
+			return +1;
+		else if (a.transform.position.z > a.transform.position.z) 
+			return -1;
+		else if (a.transform.position.z < a.transform.position.z)
+			return 1;
+		else 
+			return 0;
 	}
 
 	private float distanceOfTwoTowers(GameObject towerFrom, GameObject towerTo){
-		return Mathf.Sqrt(Mathf.Pow(this.transform.position.x - towerFrom.transform.position.x, 2) + 
-		          		  Mathf.Pow(this.transform.position.y - (towerFrom.transform.position.y + towerFrom.GetComponent<MeshRenderer>().bounds.size.y/2), 2) +
-		        	      Mathf.Pow(this.transform.position.z - towerFrom.transform.position.z, 2));
+		return Mathf.Sqrt(Mathf.Pow(towerTo.transform.position.x - towerFrom.transform.position.x, 2) + 
+		                  Mathf.Pow((towerTo.transform.position.y + towerTo.GetComponent<MeshRenderer>().bounds.size.y/2) - (towerFrom.transform.position.y + towerFrom.GetComponent<MeshRenderer>().bounds.size.y/2), 2) +
+		                  Mathf.Pow(towerTo.transform.position.z - towerFrom.transform.position.z, 2));
 	}
 
 	public void SaveTowers(int i){
@@ -128,6 +230,9 @@ public class SceneLogic : MonoBehaviour {
 	}
 
 	public void LoadTowers(int i){
+
+		savedScenesDictionary.Clear();
+		deleteAllTowers ();
 
 		savedScenes = (TextAsset)Resources.Load("Save/SavedScene" + System.Convert.ToString(i));
 		string str = savedScenes.text;
@@ -152,7 +257,7 @@ public class SceneLogic : MonoBehaviour {
 				}
 				if(line[0] == '&'){
 					IList<Vector3> towerCoordinatesTemp = new List<Vector3> (towerCoordinates);
-					savedScenesList.Add(name, towerCoordinatesTemp);
+					savedScenesDictionary.Add(name, towerCoordinatesTemp);
 					towerCoordinates.Clear();
 				}
 			}
@@ -160,7 +265,7 @@ public class SceneLogic : MonoBehaviour {
 
 		string temp = System.Convert.ToString(i);
 		IList<Vector3> towerCoordinates2 = new List<Vector3> ();
-		savedScenesList.TryGetValue(temp, out towerCoordinates2);
+		savedScenesDictionary.TryGetValue(temp, out towerCoordinates2);
 		foreach (Vector3 vect in towerCoordinates2) {
 			foreach (GameObject tile in Tiles) {
 				if (tile.transform.position.x == vect.x && tile.transform.position.z == vect.y) {
@@ -168,6 +273,17 @@ public class SceneLogic : MonoBehaviour {
 					Towers.Add(tower);
 				}
 			}
+		}
+		CreateNewronko ();
+	}
+
+	private void deleteAllTowers(){
+		GameObject[] towers = new GameObject[Towers.Count];
+		towers = Towers.ToArray ();
+
+		for (int i = 0; i < towers.Count(); i++) {
+			GameObject tower = towers[i];
+			tower.GetComponent<TowerBehavior>().DeleteTower();
 		}
 	}
 }

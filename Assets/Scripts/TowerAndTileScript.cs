@@ -10,7 +10,7 @@ public class TowerAndTileScript : MonoBehaviour
 	public int range = 3;
 	
 	private Color startcolor = Color.black;
-	private bool hasTower;
+	public bool hasTower;
 
 	private SceneLogic scn;
 	
