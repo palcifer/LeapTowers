@@ -25,6 +25,7 @@ public class SceneLogic : MonoBehaviour {
 
 	private TextAsset savedScenes;
 	private Dictionary<string, IList<Vector3>> savedScenesDictionary;
+	public Image pathIndicator;
 
 	// Use this for initialization
 	void Start () {
@@ -90,9 +91,36 @@ public class SceneLogic : MonoBehaviour {
 
 	public void SetNewronkoNewPosition(Vector3 vect){
 		vect.y = vect.y + newronkoScaleY / 2;
-		newronko.transform.position = vect;
+
+		//newronko.transform.position = vect;
+		StartCoroutine("moveNewronko", vect);
 	}	
 
+	private IEnumerator moveNewronko(Vector3 finalPosition){
+		Vector3 initPosition = newronko.transform.position;
+		Vector3 vect = finalPosition - initPosition;
+		vect.Normalize ();
+		float dist = distanceBetweenTwoPoints (initPosition, finalPosition);
+		float speed = 25;
+		for (int i = 0; i < speed; i++) {
+			newronko.transform.position = newronko.transform.position + (dist / speed) * vect;
+			//newronko.transform.Translate(vect, (dist/speed));
+			yield return new WaitForEndOfFrame();
+		}
+		newronko.transform.position = finalPosition;
+		if(newronko.transform.position.x == newronkoFinalXPosition){
+			print("Hotovooo, vyhral si");
+		}
+		yield return null;
+	}
+
+	private float distanceBetweenTwoPoints(Vector3 initPosition, Vector3 finalPosition){
+		return Mathf.Sqrt (Mathf.Pow(initPosition.x - finalPosition.x, 2) +
+		                   Mathf.Pow(initPosition.y - finalPosition.y, 2) +
+		                   Mathf.Pow(initPosition.z - finalPosition.z, 2));
+	}
+	
+	
 	public GameObject GetTileOnCoordinates(float x, float z){
 		foreach (GameObject tile in Tiles) {
 			if(tile.transform.position.x == x && tile.transform.position.z == z)
@@ -106,6 +134,8 @@ public class SceneLogic : MonoBehaviour {
 	}
 
 	public void CheckScene(){
+		if (Towers.Count == 0)
+			return;
 		float bridgeLength = cursor.bridgeLength;
 		Towers.Sort (Compare);
 		newronkoFinalXPosition = Towers.Last ().transform.position.x;
@@ -126,6 +156,7 @@ public class SceneLogic : MonoBehaviour {
 		for (int i = 1; i < towers.Count(); i++) {
 			addTower = false;
 			foreach (GameObject workingTower in workingSet) {
+
 				if(distanceOfTwoTowers(workingTower, towers[i])<bridgeLength){
 					addTower = true;
 				}
@@ -137,9 +168,11 @@ public class SceneLogic : MonoBehaviour {
 		}
 		//print (workingSet.Last ().name + "    " + newronkoFinalXPosition);
 		if (workingSet.Last().transform.position.x == newronkoFinalXPosition) {
-			print("there is a way");
+			//print("there is a way");
+			pathIndicator.color = Color.green;
 		} else {
-			print("there is not a way");
+			//print("there is not a way");
+			pathIndicator.color = Color.red;
 		}
 
 //		//save tower list
@@ -207,6 +240,8 @@ public class SceneLogic : MonoBehaviour {
 	}
 
 	private float distanceOfTwoTowers(GameObject towerFrom, GameObject towerTo){
+		if (towerFrom == null || towerTo == null)
+			return 0;
 		return Mathf.Sqrt(Mathf.Pow(towerTo.transform.position.x - towerFrom.transform.position.x, 2) + 
 		                  Mathf.Pow((towerTo.transform.position.y + towerTo.GetComponent<MeshRenderer>().bounds.size.y/2) - (towerFrom.transform.position.y + towerFrom.GetComponent<MeshRenderer>().bounds.size.y/2), 2) +
 		                  Mathf.Pow(towerTo.transform.position.z - towerFrom.transform.position.z, 2));

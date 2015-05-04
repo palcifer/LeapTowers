@@ -22,7 +22,7 @@ public class TowerBehavior : MonoBehaviour {
 
 	void OnMouseUp(){
 		System.TimeSpan span = System.DateTime.Now - timeInit;
-		if(span.TotalSeconds < 0.2d)
+		if(span.TotalSeconds < 0.2d && !cursor.creatingBridge)
 		DeleteTower ();
 	}
 
@@ -78,7 +78,7 @@ public class TowerBehavior : MonoBehaviour {
 							cursor.towerTo = this.gameObject;
 							cursor.creatingBridge = false;
 							cursor.BuildBridgeBetweenTwoTowers();
-							SceneLogic scn = GameObject.Find("GameLogic").GetComponent<SceneLogic>();
+							//SceneLogic scn = GameObject.Find("GameLogic").GetComponent<SceneLogic>();
 							//newronko is on tower from
 							if((scn.newronko.transform.position.x == cursor.towerFrom.transform.position.x) && (scn.newronko.transform.position.z == cursor.towerFrom.transform.position.z)){
 								scn.SetNewronkoNewPosition(new Vector3(cursor.towerTo.transform.position.x, 
@@ -91,9 +91,6 @@ public class TowerBehavior : MonoBehaviour {
 									                                       cursor.towerFrom.transform.position.y + cursor.towerFrom.transform.localScale.y, 
 									                                       cursor.towerFrom.transform.position.z));
 								}
-							}
-							if(scn.newronko.transform.position.x == scn.newronkoFinalXPosition){
-								print("Hotovooo, vyhral si");
 							}
 						}
 					}
