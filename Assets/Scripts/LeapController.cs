@@ -35,7 +35,7 @@ public class LeapController : MonoBehaviour {
 				foreach (Hand h in handList) {
 					if (h.Equals (handList.Frontmost)) {
 						palmPosition.x = h.StabilizedPalmPosition.x / 25;
-						palmPosition.y = (h.StabilizedPalmPosition.y / 25 + (planeYOffset * 2) - 1);
+						palmPosition.y = (h.StabilizedPalmPosition.y / 25 + (planeYOffset * 2) - 2);
 						palmPosition.z = -1 * (h.StabilizedPalmPosition.z / 25);
 					}
 				}

@@ -22,8 +22,9 @@ public class TowerBehavior : MonoBehaviour {
 
 	void OnMouseUp(){
 		System.TimeSpan span = System.DateTime.Now - timeInit;
-		if(span.TotalSeconds < 0.2d && !cursor.creatingBridge)
+		if(span.TotalSeconds < 0.2d)
 		DeleteTower ();
+		scn.CheckScene ();
 	}
 
 	void OnMouseDown(){
@@ -68,7 +69,7 @@ public class TowerBehavior : MonoBehaviour {
 
 					//Reseting bridge, if I want begin from another tower
 					if(cursor.towerFrom.Equals(this.gameObject)){
-						cursor.resetBridge();
+						cursor.ResetBridge();
 						cursor.creatingBridge = false;
 						cursor.towerFrom = null;
 					} else {

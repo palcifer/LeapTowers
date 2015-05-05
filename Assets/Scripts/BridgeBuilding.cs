@@ -66,19 +66,14 @@ public class BridgeBuilding : MonoBehaviour {
 		return (towerTo != null) ?  true :  false;
 	}
 
-	public void resetBridge(){
+	public void ResetBridge(){
 		bridge.transform.position = cameraPosition;
 	}
 
 	public bool IsBridgeShortEnaugh(){
 		return (scale<bridgeLength);
 	}
-
-	public void resetBridgeTowersColor(Color color){
-
-		towerFrom.GetComponent<Renderer> ().material.color = color;
-		towerTo.GetComponent<Renderer> ().material.color = color;
-	}
+	
 
 	public void BuildBridgeBetweenTwoTowers(){
 		if (!towerTo.Equals (null)) {

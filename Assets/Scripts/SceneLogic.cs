@@ -11,7 +11,7 @@ public class SceneLogic : MonoBehaviour {
 	public int planeYTiles = 4;
 
 	private Object TilePrefab;
-	public IList<GameObject> Tiles = new List<GameObject>();
+	public List<GameObject> Tiles = new List<GameObject>();
 
 	public List<GameObject> Towers = new List<GameObject>();
 
@@ -24,8 +24,12 @@ public class SceneLogic : MonoBehaviour {
 	private GameObject initTower;
 
 	private TextAsset savedScenes;
-	private Dictionary<string, IList<Vector3>> savedScenesDictionary;
+	private Dictionary<string, List<Vector3>> savedScenesDictionary;
 	public Image pathIndicator;
+
+	public Slider bridgeLenghtSlider;
+
+	private LeapController leapController;
 
 	// Use this for initialization
 	void Start () {
@@ -33,9 +37,10 @@ public class SceneLogic : MonoBehaviour {
 		createPlane (planeXTiles, planeYTiles, 2);
 		NewronkoPrefab = Resources.Load ("Prefabs/Newronko");
 		newronko = (GameObject)Instantiate(NewronkoPrefab, GameObject.Find ("Main Camera").transform.position, Quaternion.identity);
-		cursor = GameObject.Find ("LeapController").GetComponent<LeapController> ().cursor.GetComponent<BridgeBuilding> ();
+		leapController = GameObject.Find ("LeapController").GetComponent<LeapController> ();
+		cursor = leapController.cursor.GetComponent<BridgeBuilding> ();
 		savedScenes = (TextAsset)Resources.Load ("SavedScenes");
-		savedScenesDictionary = new Dictionary<string, IList<Vector3>> ();
+		savedScenesDictionary = new Dictionary<string, List<Vector3>> ();
 	}
 	
 
@@ -59,6 +64,8 @@ public class SceneLogic : MonoBehaviour {
 	}
 
 	public void createScene(int difficulty){
+		deleteAllTowers ();
+		cursor.bridgeLength = 4;
 		int numberOfTiles = (planeXTiles * planeYTiles) / (difficulty + 3);
 		for (int i = 0; i < numberOfTiles; i++) {
 			GameObject quad = Tiles [Random.Range (0, (planeXTiles * planeYTiles) - 1)];
@@ -69,6 +76,7 @@ public class SceneLogic : MonoBehaviour {
 				Towers.Add (tower);
 			}
 		}
+		CreateNewronko ();
 	}
 
 	public float getPlaneYPosition(){
@@ -76,6 +84,7 @@ public class SceneLogic : MonoBehaviour {
 	}
 
 	public void CreateNewronko(){
+		cursor.ResetBridge ();
 		newronkoScaleY = newronko.GetComponent<MeshRenderer> ().bounds.size.y;
 		Towers.Sort (Compare);
 		if (Towers.Count != 0) {
@@ -139,10 +148,6 @@ public class SceneLogic : MonoBehaviour {
 		float bridgeLength = cursor.bridgeLength;
 		Towers.Sort (Compare);
 		newronkoFinalXPosition = Towers.Last ().transform.position.x;
-		foreach (GameObject tower in Towers) {
-			if(tower.transform.position.x == newronkoFinalXPosition)
-				tower.renderer.material.color = Color.red;
-		}
 		GameObject[] towers = new GameObject[Towers.Count];
 		towers = Towers.ToArray ();
 		List<GameObject> workingSet = new List<GameObject> ();
@@ -166,13 +171,22 @@ public class SceneLogic : MonoBehaviour {
 			workingSet.Add(towers[i]);
 			}
 		}
-		//print (workingSet.Last ().name + "    " + newronkoFinalXPosition);
+
 		if (workingSet.Last().transform.position.x == newronkoFinalXPosition) {
 			//print("there is a way");
 			pathIndicator.color = Color.green;
+			foreach (GameObject tower in Towers) {
+				if(tower.transform.position.x == newronkoFinalXPosition){
+					tower.renderer.material.color = Color.red;
+					leapController.InitCursor();
+				}
+			}
 		} else {
 			//print("there is not a way");
 			pathIndicator.color = Color.red;
+			cursor.bridgeLength ++;
+			bridgeLenghtSlider.value = cursor.bridgeLength;
+			CheckScene();
 		}
 
 //		//save tower list
@@ -261,21 +275,22 @@ public class SceneLogic : MonoBehaviour {
 			str = str + tower.transform.position.x + ";" + tower.transform.position.z + ";" + tower.transform.localScale.y + "\n";
 		}
 		str = str + "&";
-		System.IO.File.WriteAllText (Application.dataPath + "/Resources/Save/SavedScene" + System.Convert.ToString(i) + ".txt", str);
+		System.IO.File.WriteAllText (Application.dataPath + "/Resources/Save/" + System.Convert.ToString(i) + ".txt", str);
 	}
 
-	public void LoadTowers(int i){
+	public void LoadTowers(string sceneName){
 
 		savedScenesDictionary.Clear();
 		deleteAllTowers ();
+		cursor.bridgeLength = 4;
 
-		savedScenes = (TextAsset)Resources.Load("Save/SavedScene" + System.Convert.ToString(i));
+		savedScenes = (TextAsset)Resources.Load("Save/" + sceneName);
 		string str = savedScenes.text;
 		string[] lines = str.Split('\n');
 
 		string name = "";
 		string[] coordinatesStr = new string[3];
-		IList<Vector3> towerCoordinates = new List<Vector3> ();
+		List<Vector3> towerCoordinates = new List<Vector3> ();
 
 
 		foreach (string line in lines) {
@@ -291,15 +306,20 @@ public class SceneLogic : MonoBehaviour {
 					towerCoordinates.Add(coordinatesVect);
 				}
 				if(line[0] == '&'){
-					IList<Vector3> towerCoordinatesTemp = new List<Vector3> (towerCoordinates);
+					List<Vector3> towerCoordinatesTemp = new List<Vector3> (towerCoordinates);
 					savedScenesDictionary.Add(name, towerCoordinatesTemp);
 					towerCoordinates.Clear();
 				}
 			}
 		}
 
-		string temp = System.Convert.ToString(i);
-		IList<Vector3> towerCoordinates2 = new List<Vector3> ();
+		string temp;
+		if (sceneName.Length == 1) {
+			temp = sceneName;
+		} else {
+			temp = Random.Range(1, savedScenesDictionary.Keys.Count).ToString();
+		}
+		List<Vector3> towerCoordinates2 = new List<Vector3> ();
 		savedScenesDictionary.TryGetValue(temp, out towerCoordinates2);
 		foreach (Vector3 vect in towerCoordinates2) {
 			foreach (GameObject tile in Tiles) {
@@ -309,7 +329,12 @@ public class SceneLogic : MonoBehaviour {
 				}
 			}
 		}
+		//StartCoroutine ("pauseOneFrame");
 		CreateNewronko ();
+	}
+
+	IEnumerator pauseOneFrame(){
+		yield return 0;
 	}
 
 	private void deleteAllTowers(){
