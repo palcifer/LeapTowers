@@ -96,8 +96,24 @@ public class SceneLogic : MonoBehaviour {
 		                               initTower.transform.position.y + initTower.transform.localScale.y + newronkoScaleY/2, 
 		                               initTower.transform.position.z);
 		CheckScene ();
+		MarkFinalTowers();
+		leapController.InitCursor();
 	}
 
+	public void MarkFinalTowers(){
+		StartCoroutine ("markFinalTowersAfterFixedUpdate");
+	}
+
+	
+	IEnumerator markFinalTowersAfterFixedUpdate(){
+		yield return new WaitForFixedUpdate();
+		foreach (GameObject tower in Towers) {
+			if(tower.transform.position.x == newronkoFinalXPosition){
+				tower.renderer.material.color = Color.red;
+			}
+		}
+	}
+	
 	public void SetNewronkoNewPosition(Vector3 vect){
 		vect.y = vect.y + newronkoScaleY / 2;
 
@@ -143,7 +159,7 @@ public class SceneLogic : MonoBehaviour {
 	}
 
 	public void CheckScene(){
-		if (Towers.Count == 0)
+		if (Towers.Count <2)
 			return;
 		float bridgeLength = cursor.bridgeLength;
 		Towers.Sort (Compare);
@@ -155,7 +171,7 @@ public class SceneLogic : MonoBehaviour {
 
 		float towerWidth = towers[0].GetComponent<MeshRenderer> ().bounds.size.x / 2;
 		float cursorWidth = cursor.GetComponent<MeshRenderer> ().bounds.size.x / 2;
-		bridgeLength = bridgeLength + towerWidth + cursorWidth;
+		bridgeLength = bridgeLength + towerWidth + cursorWidth -0.2f;
 
 		bool addTower = false;
 		for (int i = 1; i < towers.Count(); i++) {
@@ -175,12 +191,6 @@ public class SceneLogic : MonoBehaviour {
 		if (workingSet.Last().transform.position.x == newronkoFinalXPosition) {
 			//print("there is a way");
 			pathIndicator.color = Color.green;
-			foreach (GameObject tower in Towers) {
-				if(tower.transform.position.x == newronkoFinalXPosition){
-					tower.renderer.material.color = Color.red;
-					leapController.InitCursor();
-				}
-			}
 		} else {
 			//print("there is not a way");
 			pathIndicator.color = Color.red;
@@ -188,56 +198,6 @@ public class SceneLogic : MonoBehaviour {
 			bridgeLenghtSlider.value = cursor.bridgeLength;
 			CheckScene();
 		}
-
-//		//save tower list
-//		//List<GameObject> tmpTowers = new List<GameObject> (Towers);
-//		//WTF?? link :D 
-//		//var tmpTowers = from i in Towers orderby i.transform.position.x select i;
-//		List<GameObject> tmpTowers = new List<GameObject> (Towers);
-//		tmpTowers.Sort (Compare);
-//		List<GameObject> workingSet = new List<GameObject> ();
-//
-//		workingSet.Add (initTower);
-//		tmpTowers.RemoveAt (0);
-//
-//		List<GameObject>.Enumerator workingSetEnumerator = workingSet.GetEnumerator ();
-//		List<GameObject>.Enumerator tmpTowersEnumerator = tmpTowers.GetEnumerator ();
-//		GameObject workingTower = new GameObject();
-//		GameObject tmpTower = new GameObject();
-//		
-//		bool addTower = false;
-//
-//		while (tmpTowersEnumerator.MoveNext()) {
-//			while (workingSetEnumerator.MoveNext()) {
-//
-//				workingTower = workingSetEnumerator.Current;
-//				tmpTower = tmpTowersEnumerator.Current;
-//
-//				if(distanceOfTwoTowers(workingTower, tmpTower) < bridgeLength){
-//					addTower = true;
-//				}
-//
-//				if(Mathf.Abs(tmpTower.transform.position.x - workingTower.transform.position.x) < bridgeLength){
-//					//workingSetEnumerator.Dispose();
-//				}
-//			}
-//			if(addTower){
-//				workingSet.Add(tmpTower);
-//				addTower = false;
-//			}
-//		}
-//
-//		if (tmpTowers.Count == 0) {
-//			print ("everything ok");
-//		} else {
-//			print ("everything is not ok");
-//		}
-//
-//		//tmpTowers.Sort (Compare);
-//		//ArrayList.Adapter (tmpTowers).Sort (comparator);
-//		foreach (GameObject item in tmpTowers) {
-//			print(item.transform.position);
-//		}
 	}
 
 	private int Compare(GameObject a, GameObject b){
@@ -331,10 +291,6 @@ public class SceneLogic : MonoBehaviour {
 		}
 		//StartCoroutine ("pauseOneFrame");
 		CreateNewronko ();
-	}
-
-	IEnumerator pauseOneFrame(){
-		yield return 0;
 	}
 
 	private void deleteAllTowers(){
