@@ -25,11 +25,13 @@ public class SceneLogic : MonoBehaviour {
 
 	private TextAsset savedScenes;
 	private Dictionary<string, List<Vector3>> savedScenesDictionary;
-	public Image pathIndicator;
+	//public Image pathIndicator;
 
 	public Slider bridgeLenghtSlider;
 
 	private LeapController leapController;
+
+	//public Texture marble;
 
 	// Use this for initialization
 	void Start () {
@@ -39,7 +41,7 @@ public class SceneLogic : MonoBehaviour {
 		newronko = (GameObject)Instantiate(NewronkoPrefab, GameObject.Find ("Main Camera").transform.position, Quaternion.identity);
 		leapController = GameObject.Find ("LeapController").GetComponent<LeapController> ();
 		cursor = leapController.cursor.GetComponent<BridgeBuilding> ();
-		savedScenes = (TextAsset)Resources.Load ("SavedScenes");
+		//savedScenes = (TextAsset)Resources.Load ("SavedScenes");
 		savedScenesDictionary = new Dictionary<string, List<Vector3>> ();
 	}
 	
@@ -55,6 +57,8 @@ public class SceneLogic : MonoBehaviour {
 				GameObject quad = (GameObject)Instantiate(TilePrefab, new Vector3(i + step/2, yPlanePosition , j + step/2), Quaternion.Euler(90, 0, 0));
 				quad.transform.localScale = new Vector3(step, step, 1);
 				quad.transform.parent = plane.transform;
+				quad.renderer.material.color = Color.white;
+				//quad.renderer.material.mainTexture = marble;
 				Tiles.Add(quad);
 				j = j + step;
 			}
@@ -88,16 +92,16 @@ public class SceneLogic : MonoBehaviour {
 		newronkoScaleY = newronko.GetComponent<MeshRenderer> ().bounds.size.y;
 		Towers.Sort (Compare);
 		if (Towers.Count != 0) {
-			initTower = Towers.First ();
+			initTower = Towers[0];
+			leapController.InitCursor();
 		} else {
 			initTower = GameObject.Find("Main Camera");
 		}
 		newronko.transform.position = new Vector3(initTower.transform.position.x, 
-		                               initTower.transform.position.y + initTower.transform.localScale.y + newronkoScaleY/2, 
+		                               initTower.transform.position.y + initTower.renderer.bounds.size.y/2 + newronkoScaleY/2, 
 		                               initTower.transform.position.z);
+		SetBridgeLength (3);
 		CheckScene ();
-		MarkFinalTowers();
-		leapController.InitCursor();
 	}
 
 	public void MarkFinalTowers(){
@@ -108,6 +112,7 @@ public class SceneLogic : MonoBehaviour {
 	IEnumerator markFinalTowersAfterFixedUpdate(){
 		yield return new WaitForFixedUpdate();
 		foreach (GameObject tower in Towers) {
+			tower.renderer.material.color = Color.white;
 			if(tower.transform.position.x == newronkoFinalXPosition){
 				tower.renderer.material.color = Color.red;
 			}
@@ -171,7 +176,7 @@ public class SceneLogic : MonoBehaviour {
 
 		float towerWidth = towers[0].GetComponent<MeshRenderer> ().bounds.size.x / 2;
 		float cursorWidth = cursor.GetComponent<MeshRenderer> ().bounds.size.x / 2;
-		bridgeLength = bridgeLength + towerWidth + cursorWidth -0.2f;
+		bridgeLength = bridgeLength + towerWidth + cursorWidth - 0.2f;
 
 		bool addTower = false;
 		for (int i = 1; i < towers.Count(); i++) {
@@ -190,10 +195,11 @@ public class SceneLogic : MonoBehaviour {
 
 		if (workingSet.Last().transform.position.x == newronkoFinalXPosition) {
 			//print("there is a way");
-			pathIndicator.color = Color.green;
+			//pathIndicator.color = Color.green;
+			MarkFinalTowers();
 		} else {
 			//print("there is not a way");
-			pathIndicator.color = Color.red;
+			//pathIndicator.color = Color.red;
 			cursor.bridgeLength ++;
 			bridgeLenghtSlider.value = cursor.bridgeLength;
 			CheckScene();
@@ -205,9 +211,9 @@ public class SceneLogic : MonoBehaviour {
 			return -1;
 		else if (a.transform.position.x > b.transform.position.x)
 			return +1;
-		else if (a.transform.position.z > a.transform.position.z) 
+		else if (a.transform.position.z > b.transform.position.z) 
 			return -1;
-		else if (a.transform.position.z < a.transform.position.z)
+		else if (a.transform.position.z < b.transform.position.z)
 			return 1;
 		else 
 			return 0;
@@ -242,7 +248,7 @@ public class SceneLogic : MonoBehaviour {
 
 		savedScenesDictionary.Clear();
 		deleteAllTowers ();
-		cursor.bridgeLength = 4;
+		cursor.bridgeLength = 3;
 
 		savedScenes = (TextAsset)Resources.Load("Save/" + sceneName);
 		string str = savedScenes.text;
@@ -277,7 +283,7 @@ public class SceneLogic : MonoBehaviour {
 		if (sceneName.Length == 1) {
 			temp = sceneName;
 		} else {
-			temp = Random.Range(1, savedScenesDictionary.Keys.Count).ToString();
+			temp = Random.Range(1, savedScenesDictionary.Keys.Count + 1).ToString();
 		}
 		List<Vector3> towerCoordinates2 = new List<Vector3> ();
 		savedScenesDictionary.TryGetValue(temp, out towerCoordinates2);

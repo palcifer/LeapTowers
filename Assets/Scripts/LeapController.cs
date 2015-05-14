@@ -26,7 +26,7 @@ public class LeapController : MonoBehaviour {
 	}
 	
 	// Update is called once per frame
-	void Update () {
+	void FixedUpdate () {
 		if (isCursorAssigned) {
 			if (controller.IsConnected) {
 				//Debug.Log ("Controller is connected");

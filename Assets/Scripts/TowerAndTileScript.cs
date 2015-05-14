@@ -9,7 +9,7 @@ public class TowerAndTileScript : MonoBehaviour
 	public Object Tower;
 	public int range = 3;
 	
-	private Color startcolor = Color.black;
+	private Color startcolor = Color.white;
 	public bool hasTower;
 
 	private SceneLogic scn;
@@ -29,6 +29,9 @@ public class TowerAndTileScript : MonoBehaviour
 		GameObject tower = CreateTower (0);
 		if(tower != null) {
 			scn.Towers.Add(tower);
+			if(scn.newronko.transform.position.z > -9){
+				scn.CreateNewronko();
+			}
 		}
 	}
 
@@ -57,7 +60,7 @@ public class TowerAndTileScript : MonoBehaviour
 			hasTower = true;
 			return tower;
 		} else {
-			Debug.Log("There is allready a tower in this tile, you little fuck!");
+			//Debug.Log("There is allready a tower in this tile, you little fuck!");
 			return null;
 		}
 	}

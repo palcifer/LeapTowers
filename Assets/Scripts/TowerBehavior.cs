@@ -24,7 +24,7 @@ public class TowerBehavior : MonoBehaviour {
 		System.TimeSpan span = System.DateTime.Now - timeInit;
 		if(span.TotalSeconds < 0.2d)
 		DeleteTower ();
-		scn.CheckScene ();
+		scn.CreateNewronko ();
 	}
 
 	void OnMouseDown(){
