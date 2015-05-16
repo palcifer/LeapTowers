@@ -43,7 +43,7 @@ public class BridgeBuilding : MonoBehaviour {
 				} else {
 					bridge.renderer.material.color = Color.white;
 				}
-				bridge.transform.localScale = new Vector3(scale, 1, 0.2f);
+				bridge.transform.localScale = new Vector3(scale, 1, 0.1f);
 
 				position = (this.transform.position + new Vector3(towerFrom.transform.position.x, 
 				                                                  GameObject.Find("GameLogic").GetComponent<SceneLogic>().getPlaneYPosition() + towerFrom.transform.localScale.y * 2.0f,
@@ -80,7 +80,7 @@ public class BridgeBuilding : MonoBehaviour {
 			scale = Mathf.Sqrt (Mathf.Pow (towerTo.transform.position.x - towerFrom.transform.position.x, 2) + 
 			                    Mathf.Pow ((towerTo.transform.position.y + towerTo.GetComponent<MeshRenderer>().bounds.size.y/2) - (towerFrom.transform.position.y + towerFrom.GetComponent<MeshRenderer>().bounds.size.y/2), 2) +
 				Mathf.Pow (towerTo.transform.position.z - towerFrom.transform.position.z, 2));
-			bridge.transform.localScale = new Vector3 (scale, 1, 0.2f);
+			bridge.transform.localScale = new Vector3 (scale, 1, 0.1f);
 		
 			position = ((new Vector3 (towerTo.transform.position.x, 
 		                      		  GameObject.Find ("GameLogic").GetComponent<SceneLogic> ().getPlaneYPosition () + towerTo.transform.localScale.y * 2.0f,

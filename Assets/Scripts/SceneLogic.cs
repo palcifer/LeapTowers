@@ -18,7 +18,7 @@ public class SceneLogic : MonoBehaviour {
 	private Object NewronkoPrefab;
 	public GameObject newronko;
 	public float newronkoFinalXPosition = 5;
-	private float newronkoScaleY = 1;
+	private float newronkoScaleY;
 
 	private BridgeBuilding cursor;
 	private GameObject initTower;
@@ -37,8 +37,9 @@ public class SceneLogic : MonoBehaviour {
 	void Start () {
 		TilePrefab = Resources.Load ("Prefabs/Tile");
 		createPlane (planeXTiles, planeYTiles, 2);
-		NewronkoPrefab = Resources.Load ("Prefabs/Newronko");
-		newronko = (GameObject)Instantiate(NewronkoPrefab, GameObject.Find ("Main Camera").transform.position, Quaternion.identity);
+		//NewronkoPrefab = Resources.Load ("Prefabs/Newronko");
+		//newronko = (GameObject)Instantiate(NewronkoPrefab, GameObject.Find ("Main Camera").transform.position, Quaternion.identity);
+		newronkoScaleY = newronko.GetComponentInChildren<Collider>().bounds.size.y;
 		leapController = GameObject.Find ("LeapController").GetComponent<LeapController> ();
 		cursor = leapController.cursor.GetComponent<BridgeBuilding> ();
 		//savedScenes = (TextAsset)Resources.Load ("SavedScenes");
@@ -89,7 +90,7 @@ public class SceneLogic : MonoBehaviour {
 
 	public void CreateNewronko(){
 		cursor.ResetBridge ();
-		newronkoScaleY = newronko.GetComponent<MeshRenderer> ().bounds.size.y;
+		newronkoScaleY = newronko.GetComponent<Collider> ().bounds.size.y;
 		Towers.Sort (Compare);
 		if (Towers.Count != 0) {
 			initTower = Towers[0];
@@ -98,8 +99,9 @@ public class SceneLogic : MonoBehaviour {
 			initTower = GameObject.Find("Main Camera");
 		}
 		newronko.transform.position = new Vector3(initTower.transform.position.x, 
-		                               initTower.transform.position.y + initTower.renderer.bounds.size.y/2 + newronkoScaleY/2, 
+		                               initTower.transform.position.y + initTower.renderer.bounds.size.y/2 + newronkoScaleY /2, 
 		                               initTower.transform.position.z);
+		//newronko.transform.rotation = Quaternion.Euler (Vector3.zero);
 		SetBridgeLength (3);
 		CheckScene ();
 	}
@@ -131,13 +133,15 @@ public class SceneLogic : MonoBehaviour {
 		Vector3 vect = finalPosition - initPosition;
 		vect.Normalize ();
 		float dist = distanceBetweenTwoPoints (initPosition, finalPosition);
-		float speed = 25;
+		int speed = 25;
+		newronko.transform.LookAt(finalPosition - 2 * dist * vect);
 		for (int i = 0; i < speed; i++) {
 			newronko.transform.position = newronko.transform.position + (dist / speed) * vect;
 			//newronko.transform.Translate(vect, (dist/speed));
 			yield return new WaitForEndOfFrame();
 		}
 		newronko.transform.position = finalPosition;
+		newronko.transform.rotation = Quaternion.Euler (Vector3.zero);
 		if(newronko.transform.position.x == newronkoFinalXPosition){
 			print("Hotovooo, vyhral si");
 		}
@@ -175,7 +179,7 @@ public class SceneLogic : MonoBehaviour {
 		workingSet.Add (initTower);
 
 		float towerWidth = towers[0].GetComponent<MeshRenderer> ().bounds.size.x / 2;
-		float cursorWidth = cursor.GetComponent<MeshRenderer> ().bounds.size.x / 2;
+		float cursorWidth = cursor.GetComponent<Collider> ().bounds.size.x / 2;
 		bridgeLength = bridgeLength + towerWidth + cursorWidth - 0.2f;
 
 		bool addTower = false;
