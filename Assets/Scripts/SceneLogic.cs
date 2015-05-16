@@ -33,6 +33,8 @@ public class SceneLogic : MonoBehaviour {
 
 	public GameObject flag;
 
+	public Text congratz;
+
 	// Use this for initialization
 	void Start () {
 		TilePrefab = Resources.Load ("Prefabs/Tile");
@@ -44,6 +46,7 @@ public class SceneLogic : MonoBehaviour {
 		cursor = leapController.cursor.GetComponent<BridgeBuilding> ();
 		//savedScenes = (TextAsset)Resources.Load ("SavedScenes");
 		savedScenesDictionary = new Dictionary<string, List<Vector3>> ();
+		congratz.enabled = false;
 	}
 	
 
@@ -89,6 +92,7 @@ public class SceneLogic : MonoBehaviour {
 	}
 
 	public void CreateNewronko(){
+		congratz.enabled = false;
 		cursor.ResetBridge ();
 		newronkoScaleY = newronko.GetComponent<Collider> ().bounds.size.y;
 		Towers.Sort (Compare);
@@ -149,6 +153,7 @@ public class SceneLogic : MonoBehaviour {
 		newronko.transform.rotation = Quaternion.Euler (Vector3.zero);
 		if(newronko.transform.position.x == newronkoFinalXPosition){
 			print("Hotovooo, vyhral si");
+			congratz.enabled = true;
 		}
 		yield return null;
 	}

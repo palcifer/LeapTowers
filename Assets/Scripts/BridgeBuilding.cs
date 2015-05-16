@@ -41,7 +41,7 @@ public class BridgeBuilding : MonoBehaviour {
 				if(scale>bridgeLength) {
 					bridge.GetComponent<Renderer>().material.color = Color.red;
 				} else {
-					bridge.renderer.material.color = Color.white;
+					bridge.renderer.material.color = Color.green;
 				}
 				bridge.transform.localScale = new Vector3(scale, 1, 0.1f);
 
