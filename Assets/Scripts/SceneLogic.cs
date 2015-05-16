@@ -133,7 +133,7 @@ public class SceneLogic : MonoBehaviour {
 		Vector3 vect = finalPosition - initPosition;
 		vect.Normalize ();
 		float dist = distanceBetweenTwoPoints (initPosition, finalPosition);
-		int speed = 25;
+		int speed = (int)cursor.bridgeLength + 20;
 		newronko.transform.LookAt(finalPosition - 2 * dist * vect);
 		for (int i = 0; i < speed; i++) {
 			newronko.transform.position = newronko.transform.position + (dist / speed) * vect;
@@ -245,7 +245,8 @@ public class SceneLogic : MonoBehaviour {
 			str = str + tower.transform.position.x + ";" + tower.transform.position.z + ";" + tower.transform.localScale.y + "\n";
 		}
 		str = str + "&";
-		System.IO.File.WriteAllText (Application.dataPath + "/Resources/Save/" + System.Convert.ToString(i) + ".txt", str);
+		//System.IO.File.WriteAllText (Application.dataPath + "/Resources/Save/" + System.Convert.ToString(i) + ".txt", str);
+		System.IO.File.WriteAllText (Application.persistentDataPath + "/" + System.Convert.ToString(i) + ".txt", str);
 	}
 
 	public void LoadTowers(string sceneName){
@@ -254,8 +255,18 @@ public class SceneLogic : MonoBehaviour {
 		deleteAllTowers ();
 		cursor.bridgeLength = 3;
 
-		savedScenes = (TextAsset)Resources.Load("Save/" + sceneName);
-		string str = savedScenes.text;
+		string savedScenesStr = "";
+		string str = "";
+
+		if (sceneName.Length == 1) {
+			savedScenesStr = System.IO.File.ReadAllText(Application.persistentDataPath + "/" + sceneName + ".txt");
+		} else {
+			savedScenes = (TextAsset)Resources.Load("Save/" + sceneName);
+		}
+		if (savedScenesStr != "")
+			str = savedScenesStr;
+		else
+			str = savedScenes.text;
 		string[] lines = str.Split('\n');
 
 		string name = "";
