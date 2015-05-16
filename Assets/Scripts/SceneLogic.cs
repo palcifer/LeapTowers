@@ -31,7 +31,7 @@ public class SceneLogic : MonoBehaviour {
 
 	private LeapController leapController;
 
-	//public Texture marble;
+	public GameObject flag;
 
 	// Use this for initialization
 	void Start () {
@@ -113,10 +113,15 @@ public class SceneLogic : MonoBehaviour {
 	
 	IEnumerator markFinalTowersAfterFixedUpdate(){
 		yield return new WaitForFixedUpdate();
+		foreach (var item in GameObject.FindGameObjectsWithTag("Flag")) {
+			Destroy(item);
+		}
 		foreach (GameObject tower in Towers) {
-			tower.renderer.material.color = Color.white;
 			if(tower.transform.position.x == newronkoFinalXPosition){
-				tower.renderer.material.color = Color.red;
+				Vector3 vect = new Vector3(tower.transform.position.x, 
+				                           tower.transform.position.y + tower.GetComponent<MeshRenderer>().bounds.size.y/2 + 1,
+				                           tower.transform.position.z);
+				GameObject.Instantiate(flag, vect, Quaternion.identity);
 			}
 		}
 	}
