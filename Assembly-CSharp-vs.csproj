@@ -52,8 +52,6 @@
      <Compile Include="Assets\Scripts\TowerAndTileScript.cs" />
      <Compile Include="Assets\Scripts\TowerBehavior.cs" />
      <None Include="Assets\Resources\Save\Easy.txt" />
-     <None Include="Assets\Resources\Save\1.txt" />
-     <None Include="Assets\Resources\Save\2.txt" />
      <None Include="Assets\Resources\Save\Medium.txt" />
      <None Include="Assets\Resources\Save\Hard.txt" />
  <Reference Include="UnityEngine.UI">
